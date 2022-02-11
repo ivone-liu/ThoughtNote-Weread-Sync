@@ -1,6 +1,6 @@
 #!/use/bin/python36
 
-import os, requests
+import os, re, requests
 
 COOKIE = ""
 API = ""
@@ -52,6 +52,13 @@ def collect_api():
 	API = api_url
 	with open("api", 'w') as f:
 		f.write(api_url)
+
+def handle_api(url):
+	pattern = re.compile("https:\/\/api.fang-cun.net\/api\/open\/note\/.+")
+	match = pattern.match(url)
+	if match is None:
+		print("API地址错误，请重试")
+		collect_api()
 
 def getBooks():
 	'''读取书架'''
