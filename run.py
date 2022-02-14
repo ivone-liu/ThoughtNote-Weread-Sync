@@ -108,10 +108,12 @@ def syncNotes(bookmark, book, bookmark_id):
 		SAVED.append(bookmark_id)
 
 def saveNoteId(notes):
+	'''记录用户已经同步的笔记ID'''
 	with open("saved", "w") as f:
 		f.write(notes)
 
 def readSavedNote():
+	'''读取用户已经同步的笔记ID'''
 	global SAVED
 	SAVED = SAVED.split(",")
 
