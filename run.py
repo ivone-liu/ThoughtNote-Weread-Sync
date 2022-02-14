@@ -5,10 +5,11 @@ import os, re, requests
 COOKIE = ""
 API = ""
 USERVID = ""
+SAVED = []
 
 def init():
 	'''初始化'''
-	global COOKIE, API
+	global COOKIE, API, SAVED
 	if not os.path.exists("cookie"):
 		with open("cookie", "w") as f:
 			pass
@@ -19,6 +20,12 @@ def init():
 			pass
 	with open("api") as f:
 		API = f.read()
+	if not os.path.exists("saved"):
+		with open("saved", "w") as f:
+			pass
+	with open("saved") as f:
+		SAVED = f.read()
+	readSavedNote()
 
 def collect_cookie():
 	'''获取cookie'''
@@ -85,15 +92,28 @@ def getBookmarks(bookid, book):
 	bookmarks = bookmark_resp.json()
 	for bookmark in bookmarks['updated']:
 		print("正在同步读书笔记：%s\n"%bookmark['markText'])
-		syncNotes(bookmark['markText'], book)
+		syncNotes(bookmark['markText'], book, bookmark['bookmarkId'])
 
-def syncNotes(bookmark, book):
+def syncNotes(bookmark, book, bookmark_id):
 	'''同步笔记'''
-	global API
+	global API, SAVED
+	if bookmark_id in SAVED:
+		return
 	note = "#%s  %s"%(book, bookmark)
 	params = {'note': note}
 	resp = requests.post(API, data = params)
-	print(resp.json())
+	result = resp.json()
+	if resp.status_code == 200 and result['code']:
+		print("已同步")
+		SAVED.append(bookmark_id)
+
+def saveNoteId(notes):
+	with open("saved", "w") as f:
+		f.write(notes)
+
+def readSavedNote():
+	global SAVED
+	SAVED = SAVED.split(",")
 
 if __name__ == "__main__":
 	init()
@@ -103,3 +123,4 @@ if __name__ == "__main__":
 		collect_api()
 	handle_cookie(COOKIE)
 	getBooks()
+	saveNoteId(','.join(SAVED))
